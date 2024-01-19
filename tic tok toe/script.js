@@ -1,91 +1,116 @@
-console.log("Welcome to tic tac toe")
-let music = new Audio("music.mp3")
-let audioTurn = new Audio("ting.mp3")
-let audiogameover = new Audio("gameover.mp3")
-let turn = "X"
-let gameover = false
+// JavaScript - script.js
+console.log("Welcome to tic tac toe");
 
-// Fumction to change the turn
+let turn = "X";
+let gameover = false;
+
+// Function to change the turn
 const changeTurn = () => {
-    return turn === "X" ? "0" : "X"
-}
+    return turn === "X" ? "O" : "X";
+};
 
 // Function to check a win
-
 const checkWin = () => {
-    let boxtext = document.getElementsByClassName("boxtext")
+    let boxtext = document.getElementsByClassName("boxtext");
     let wins = [
-        [0, 1, 2, 5, 5, 0, 7, 9, 0],
-        [3, 4, 5, 5, 15, 0, 7, 29, 0],
-        [6, 7, 8, 5, 25, 0, 7, 49, 0],
-        [0, 3, 6, -5, 15, 90, -13, 29, 90],
-        [1, 4, 7, 5, 15, 90, 8, 29, 90],
-        [2, 5, 8, 15, 15, 90, 28, 29, 90],
-        [0, 4, 8, 5, 15, 45, 9, 30, 46],
-        [2, 4, 6, 5, 15, 135, 7, 30, 134],
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+    ];
 
-    ]
-    wins.forEach(e => {
-        let x = window.matchMedia("(max-width: 950px)")
-        if ((boxtext[e[0]].innerText === boxtext[e[1]].innerText) && (boxtext[e[2]].innerText === boxtext[e[1]].innerText) && (boxtext[e[0]].innerText !== "")){
-            document.querySelector('.info').innerText = boxtext[e[0]].innerText + " Won"
-        gameover = true
-        document.querySelector(".imgbox").getElementsByTagName("img")[0].style.width = "200px"; 
-        document.querySelector(".line").style.width = "20vw";
-        document.querySelector(".line").style.transform = `translate(${e[3]}vw, ${e[4]}vw) rotate(${e[5]}deg)`;
-        if (x.matches){
-                    document.querySelector(".line").style.width = "45vw";
-                    document.querySelector(".line").style.transform = `translate(${e[6]}vw, ${e[7]}vw) rotate(${e[8]}deg)`;
-                }
-        
-        
-            }
-           
-         })
+    for (let i = 0; i < wins.length; i++) {
+        let [a, b, c] = wins[i];
+        if (
+            boxtext[a].innerText !== "" &&
+            boxtext[a].innerText === boxtext[b].innerText &&
+            boxtext[a].innerText === boxtext[c].innerText
+        ) {
+            document.querySelector(".info").innerText =
+                boxtext[a].innerText + " Won";
+            gameover = true;
+            return true;
+        }
     }
-    
+    return false;
+};
 
+// Function to check for a draw
+const checkDraw = () => {
+    let boxtext = document.getElementsByClassName("boxtext");
+    for (let i = 0; i < boxtext.length; i++) {
+        if (boxtext[i].innerText === "") {
+            // If any cell is empty, the game is not a draw
+            return false;
+        }
+    }
+    // All cells are filled, declare a draw
+    document.querySelector(".info").innerText = "It's a Draw!";
+    gameover = true;
+    return true;
+};
 
+// Function to get available cells in the board
+const getAvailableCells = () => {
+    let boxtext = document.getElementsByClassName("boxtext");
+    let availableCells = [];
+    for (let i = 0; i < boxtext.length; i++) {
+        if (boxtext[i].innerText === "") {
+            availableCells.push(i);
+        }
+    }
+    return availableCells;
+};
 
+// Function to make the computer move
+const makeComputerMove = () => {
+    let availableCells = getAvailableCells();
+    if (availableCells.length > 0) {
+        let randomIndex = Math.floor(Math.random() * availableCells.length);
+        let computerMove = availableCells[randomIndex];
+        document.getElementsByClassName("boxtext")[computerMove].innerText = "O";
+        turn = changeTurn();
+        document.querySelector(".info").innerText = "Turn for " + turn;
+        return checkWin() || checkDraw();
+    }
+    return false;
+};
+
+// Function to play the computer until win or lose
+const playComputerUntilGameOver = () => {
+    while (turn === "O" && !gameover) {
+        gameover = makeComputerMove();
+    }
+};
 
 // Game logic
-let boxes = document.getElementsByClassName('box');
-Array.from(boxes).forEach(element => {
-    let boxtext = element.querySelector(".boxtext")
+let boxes = document.getElementsByClassName("box");
+Array.from(boxes).forEach((element) => {
     element.addEventListener("click", () => {
-        if (boxtext.innerText === "") {
-            boxtext.innerText = turn
-            turn = changeTurn()
-            audioTurn.play()
-            checkWin()
-            if (!gameover) {
-                document.getElementsByClassName("info")[0].innerText = "Turn for" + turn
+        if (element.innerText === "" && !gameover) {
+            element.innerText = turn;
+            turn = changeTurn();
+            document.querySelector(".info").innerText = "Turn for " + turn;
+            if (!checkWin() && !checkDraw() && turn === "O") {
+                // Computer's turn
+                playComputerUntilGameOver();
             }
-
         }
+    });
+});
 
-
-    })
-})
-// Add on clicklistener to reset button
-reset.addEventListener("click",()=>{
-    let boxtexts = document.querySelectorAll(".boxtext")
-    Array.from(boxtexts).forEach(element => {
-        element.innerText = ""
+// Add onclick listener to reset button
+let reset = document.querySelector(".reset");
+reset.addEventListener("click", () => {
+    let boxtexts = document.querySelectorAll(".boxtext");
+    Array.from(boxtexts).forEach((element) => {
+        element.innerText = "";
     });
     turn = "X";
-    gameover = false
-    document.querySelector(".line").style.width = "0vw"
-    document.getElementsByClassName("info")[0].innerText = "Turn for " + turn
-    document.querySelector(".imgbox").getElementsByTagName("img")[0].style.width = "0"
-})
-
-// line after media query
-// let x = window.matchMedia("(max-width: 950px)")
-// function line(x){
-//     if (x.matches){
-//         document.querySelector(".line").style.width = "45vw";
-//         document.querySelector(".line").style.transform = `translate(${e[6]}vw, ${e[7]}vw) rotate(${e[8]}deg)`;
-//     }
-
-// }
+    gameover = false;
+    document.querySelector(".info").innerText = "Turn for " + turn;
+});
